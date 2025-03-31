@@ -1,5 +1,5 @@
 from application import app
-from flask import render_template, request
+from flask import render_template, request, Response
 import json
 
 @app.route("/")
@@ -23,13 +23,24 @@ def register():
 def login():
     return render_template("login.html", login=True)
 
-@app.route("/enrollment", methods=["GET"])
+@app.route("/enrollment", methods=["GET", "POST"])
 def enrollment():
-    id = request.args.get("courseID")
-    title = request.args.get("title")
-    term = request.args.get("term")
+    id = request.form.get("courseID")
+    title = request.form.get("title")
+    term = request.form.get("term")
     return render_template("enrollment.html", data={
         "id": id,
         "title": title,
         "term": term,
     })
+
+@app.route("/api/")
+@app.route("/api/<idx>")
+def api(idx=None):
+    with open("courses.json", "r") as file:
+        courseList = json.load(file)
+        if idx is None:
+            jdata = courseList
+        else:
+            jdata = courseList[int(idx)]
+    return Response(json.dumps(jdata), mimetype="application/json")
