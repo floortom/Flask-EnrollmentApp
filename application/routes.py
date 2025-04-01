@@ -2,6 +2,7 @@ from application import app, db
 from flask import render_template, request, Response
 import json
 from application.models import User, Course, Enrollment
+from application.forms import LoginForm
 
 @app.route("/")
 @app.route("/index")
@@ -20,9 +21,10 @@ def courses(term="2025"):
 def register():
     return render_template("register.html", register=True)
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html", login=True)
+    form = LoginForm()
+    return render_template("login.html", form=form, title="Login", login=True)
 
 @app.route("/enrollment", methods=["GET", "POST"])
 def enrollment():
