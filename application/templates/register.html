@@ -1,19 +1,54 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <h2>New User Registration</h2>
     <div class="container">
-        <form name="register" action="register.php" method="get">
-            <label for="username"><b>Username</b></label>
-            <input type="text" placeholder="Enter Username" name="username" required>
-            <br>
-            <label for="email"><b>Email</b></label>
-            <input type="text" placeholder="Enter Email" name="email" required>
-            <br>
-            <label for="password"><b>Password</b></label>
-            <input type="password" placeholder="Enter Password" name="password" required>
-            <br class="clear">
-            <input class="btn-submit" type="submit" name="submit">
-        </form>
+        <fieldset>
+            <legend>{{title}}</legend>
+            <form name="register" action="" method="post">
+                {{form.hidden_tag()}}
+
+                <p>{{form.email.label}}</p>
+                <p>{{form.email}}</p>
+                <p>
+                    {% for error in form.email.errors %}
+                        <span class="error-message">{{error}}</span>
+                    {% endfor %}
+                </p>
+
+                <p>{{form.password.label}}</p>
+                <p>{{form.password}}</p>
+                <p>
+                    {% for error in form.password.errors %}
+                        <span class="error-message">{{error}}</span>
+                    {% endfor %}
+                </p>
+
+                <p>{{form.passwordConfirm.label}}</p>
+                <p>{{form.passwordConfirm}}</p>
+                <p>
+                    {% for error in form.passwordConfirm.errors %}
+                        <span class="error-message">{{error}}</span>
+                    {% endfor %}
+                </p>
+
+                <p>{{form.firstName.label}}</p>
+                <p>{{form.firstName}}</p>
+                <p>
+                    {% for error in form.firstName.errors %}
+                        <span class="error-message">{{error}}</span>
+                    {% endfor %}
+                </p>
+
+                <p>{{form.lastName.label}}</p>
+                <p>{{form.lastName}}</p>
+                <p>
+                    {% for error in form.lastName.errors %}
+                        <span class="error-message">{{error}}</span>
+                    {% endfor %}
+                </p>
+
+                <p>{{form.submit}}</p>
+            </form>
+        </fieldset>
     </div>
 {% endblock %}

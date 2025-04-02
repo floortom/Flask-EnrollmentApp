@@ -2,7 +2,7 @@ from application import app, db
 from flask import render_template, request, Response, flash, redirect
 import json
 from application.models import User, Course, Enrollment
-from application.forms import LoginForm
+from application.forms import LoginForm, RegisterForm
 
 @app.route("/")
 @app.route("/index")
@@ -19,7 +19,8 @@ def courses(term="2025"):
 
 @app.route("/register")
 def register():
-    return render_template("register.html", register=True)
+    form = RegisterForm()
+    return render_template("register.html", form=form, title="Register", register=True)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
