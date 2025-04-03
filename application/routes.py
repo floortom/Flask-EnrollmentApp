@@ -1,5 +1,5 @@
 from application import app, db
-from flask import render_template, request, Response, flash, redirect
+from flask import render_template, request, Response, flash, redirect, url_for
 import json
 from application.models import User, Course, Enrollment
 from application.forms import LoginForm, RegisterForm
@@ -12,22 +12,43 @@ def index():
 
 @app.route("/courses/")
 @app.route("/courses/<term>")
-def courses(term="2025"):
-    with open("courses.json", "r") as file:
-        courseList = json.load(file)
-    return render_template("courses.html", courses=courseList, course=True, term=term)
+def courses(term=None):
+    if term is None:
+        term = "Spring 2025"
+    classes = Course.objects.order_by("objectID")
+    return render_template("courses.html", courses=classes, course=True, term=term)
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
+    if form.validate_on_submit():
+        userID = User.objects.count()
+        userID += 1
+        email = form.email.data
+        password = form.password.data
+        firstName = form.firstName.data
+        lastName = form.lastName.data
+
+        user = User(user_id=userID,
+                    first_name=firstName,
+                    last_name=lastName,
+                    email=email)
+        user.set_password(password)
+        user.save()
+        flash("You are successfully registered", "success")
+        return redirect(url_for("index"))
     return render_template("register.html", form=form, title="Register", register=True)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        if request.form.get("email") == "test@uta.com":
-            flash("You are successfully logged in!", "success")
+        email = form.email.data
+        password = form.password.data
+        user = User.objects(email=email).first()
+
+        if user and user.get_password(password):
+            flash(f"{user.first_name} logged in!", "success")
             return redirect("/index")
         else:
             flash("Sorry, something went wrong.", "warning")
@@ -35,14 +56,21 @@ def login():
 
 @app.route("/enrollment", methods=["GET", "POST"])
 def enrollment():
-    id = request.form.get("courseID")
-    title = request.form.get("title")
+    courseID = request.form.get("courseID")
+    courseTitle = request.form.get("title")
+    user_id = 1
+
+    if courseID:
+        if Enrollment.objects(user_id=user_id, courseID=courseID):
+            flash(f"You are already enrolled for {courseTitle}", "warning")
+            redirect(url_for("courses"))
+        else:
+            Enrollment(user_id=user_id, courseID=courseID)
+            flash(f"You are now enrolled in {courseTitle}", "success")
+
     term = request.form.get("term")
-    return render_template("enrollment.html", data={
-        "id": id,
-        "title": title,
-        "term": term,
-    })
+    classes = None
+    return render_template("enrollment.html", classes=classes, enrollment=True, title="Enrollment")
 
 @app.route("/api/")
 @app.route("/api/<idx>")
