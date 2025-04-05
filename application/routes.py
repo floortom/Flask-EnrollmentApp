@@ -1,5 +1,5 @@
 from application import app, db
-from flask import render_template, request, Response, flash, redirect, url_for
+from flask import render_template, request, Response, flash, redirect, url_for, session
 import json
 from application.models import User, Course, Enrollment
 from application.forms import LoginForm, RegisterForm
@@ -39,16 +39,24 @@ def register():
         return redirect(url_for("index"))
     return render_template("register.html", form=form, title="Register", register=True)
 
+@app.route("/logout")
+def logout():
+    session["username"] = False
+    return redirect(url_for("index"))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("username"):
+        return redirect(url_for("index"))
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
         user = User.objects(email=email).first()
-
         if user and user.get_password(password):
             flash(f"{user.first_name} logged in!", "success")
+            session["user_id"] = user.user_id
+            session["username"] = user.first_name
             return redirect("/index")
         else:
             flash("Sorry, something went wrong.", "warning")
@@ -56,9 +64,12 @@ def login():
 
 @app.route("/enrollment", methods=["GET", "POST"])
 def enrollment():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+
     courseID = request.form.get("courseID")
     courseTitle = request.form.get("title")
-    user_id = 1
+    user_id = session.get("user_id")
 
     if courseID:
         if Enrollment.objects(user_id=user_id, courseID=courseID):
@@ -121,9 +132,5 @@ def api(idx=None):
 
 @app.route("/user")
 def user():
-    # User(userId=1, firstName="Alfred", lastName="Hithcock", email="alfred@hitchcock.com",
-    #      password="abc1234").save()
-    # User(userId=2, firstName="Miranda", lastName="Watson", email="miranda@watson.com",
-    #      password="password00").save()
     users = User.objects.all()
     return render_template("user.html", users=users)
